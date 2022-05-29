@@ -1,32 +1,20 @@
 const ctx = canvas.getContext("2d");
 
 const keys = [];
-window.onkeydown = (evt) => {
-    keys[evt.key] = true;
-}
-
-window.onkeyup = (evt) => {
-    keys[evt.key] = false;
-}
+window.onkeydown = (evt) => keys[evt.key] = true;
+window.onkeyup = (evt) => keys[evt.key] = false;
 
 function rounding(position) {
-    if (position.x < 0)
-        position.x = 640;
-    if (position.y < 0)
-        position.y = 480;
-    if (position.x > 640)
-        position.x = 0;
-    if (position.y > 480)
-        position.y = 0;
-
+    if (position.x < 0) position.x = 640;
+    if (position.y < 0) position.y = 480;
+    if (position.x > 640) position.x = 0;
+    if (position.y > 480) position.y = 0;
 }
-
 
 const PARTICLESIZE = 16;
 class Particle {
     position;
     speed;
-
     constructor() {
         this.position = {
             x: Math.random() * 640,
@@ -66,7 +54,6 @@ class Player {
         this.angle = 0;
     }
     live() {
-
         const STEP = 0.1;
         if (keys["ArrowLeft"])
             this.angle -= STEP;
@@ -83,7 +70,6 @@ class Player {
     }
 
     draw() {
-
         function drawMe(position, angle) {
             const A = 0.5;
             const S = 32;
@@ -100,16 +86,11 @@ class Player {
         ctx.lineWidth = 1;
         ctx.strokeStyle = "gray";
         drawMe({
-                x: (this.position.x + 320) % 640,
-                y: 480 - this.position.y
-            },
-            2 * Math.PI - this.angle);
-
-
+            x: (this.position.x + 320) % 640,
+            y: 480 - this.position.y
+        }, 2 * Math.PI - this.angle);
     }
 }
-
-
 
 const objects = new Set();
 const player = new Player();
@@ -118,11 +99,7 @@ objects.add(player);
 for (let i = 0; i < 10; i++)
     objects.add(new Particle());
 
-
-
-function dist(a, b) {
-    return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
-}
+const dist = (a, b) => Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
 
 let counter = 0;
 let score = 0;
@@ -130,57 +107,61 @@ let beginningTime = Date.now();
 let gameover = false;
 const initialTime = 100;
 
-function time() {
-    return initialTime - Math.floor((Date.now() - beginningTime) / 1000);
-}
-
-
+const time = () => initialTime - Math.floor((Date.now() - beginningTime) / 1000);
 setInterval(() => objects.add(new Particle()), 5000);
 
-function animate() {
-    requestAnimationFrame(animate);
+function drawBackground() {
     ctx.fillStyle = "#BBDDFF";
     ctx.fillRect(0, 0, 640, 480);
+}
 
-    if (time() >= 0) {
-
-        for (const o of objects)
-            o.live();
-
-        for (const o of objects)
-            if (o instanceof Particle)
-                if (dist(o.position, player.position) < 16) {
-                    objects.delete(o);
-                    score += 1;
-                }
-
-        if (keys[" "] && counter <= 0) {
-            player.position = {
-                x: (player.position.x + 320) % 640,
-                y: 480 - player.position.y
-            }
-            player.angle = 2 * Math.PI - player.angle;
-            counter = 10;
-        }
-
-    } else {
-        ctx.fillStyle = "black";
-        ctx.font = "30px Arial";
-        ctx.fillText("Game Over", 240, 240);
-        ctx.fillText("score: " + score, 280, 280);
-    }
-
-
+function interactionBetweenObjects() {
     for (const o of objects)
-        o.draw();
+        if (o instanceof Particle)
+            if (dist(o.position, player.position) < 16) {
+                objects.delete(o);
+                score += 1;
+            }
+}
 
-    counter--;
+function crossSurface() {
+    player.position = {
+        x: (player.position.x + 320) % 640,
+        y: 480 - player.position.y
+    }
+    player.angle = 2 * Math.PI - player.angle;
+    counter = 10;
+}
 
+function drawScoreAndTime() {
     ctx.fillStyle = "black";
     ctx.font = "12px Arial";
     ctx.fillText("time: " + Math.max(0, time()), 640 - 300, 16);
     ctx.fillText("score: " + score, 16, 16);
+}
 
+function drawGameOver() {
+    ctx.fillStyle = "black";
+    ctx.font = "30px Arial";
+    ctx.fillText("Game Over", 240, 240);
+    ctx.fillText("score: " + score, 280, 280);
+}
+
+function animate() {
+    requestAnimationFrame(animate);
+    drawBackground();
+
+    if (time() >= 0) {
+        for (const o of objects) o.live();
+        interactionBetweenObjects();
+        if (keys[" "] && counter <= 0)
+            crossSurface();
+        counter--;
+    } else
+        drawGameOver();
+
+    for (const o of objects) o.draw();
+    drawScoreAndTime();
 }
 
 animate();
