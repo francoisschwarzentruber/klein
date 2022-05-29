@@ -128,7 +128,7 @@ let counter = 0;
 let score = 0;
 let beginningTime = Date.now();
 let gameover = false;
-const initialTime = 3;
+const initialTime = 100;
 
 function time() {
     return initialTime - Math.floor((Date.now() - beginningTime) / 1000);
