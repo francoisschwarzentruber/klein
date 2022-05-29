@@ -128,10 +128,10 @@ let counter = 0;
 let score = 0;
 let beginningTime = Date.now();
 let gameover = false;
-
+const initialTime = 3;
 
 function time() {
-    return 100 - Math.floor((Date.now() - beginningTime) / 1000);
+    return initialTime - Math.floor((Date.now() - beginningTime) / 1000);
 }
 
 
@@ -166,7 +166,8 @@ function animate() {
     } else {
         ctx.fillStyle = "black";
         ctx.font = "30px Arial";
-        ctx.fillText("score: " + score, 280, 240);
+        ctx.fillText("Game Over", 240, 240);
+        ctx.fillText("score: " + score, 280, 280);
     }
 
 
