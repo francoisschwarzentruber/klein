@@ -125,6 +125,15 @@ function dist(a, b) {
 }
 
 let counter = 0;
+let score = 0;
+let beginningTime = Date.now();
+let gameover = false;
+
+
+function time() {
+    return 100 - Math.floor((Date.now() - beginningTime) / 1000);
+}
+
 
 setInterval(() => objects.add(new Particle()), 5000);
 
@@ -133,25 +142,43 @@ function animate() {
     ctx.fillStyle = "#BBDDFF";
     ctx.fillRect(0, 0, 640, 480);
 
-    for (const o of objects)
-        o.live();
+    if (time() >= 0) {
+
+        for (const o of objects)
+            o.live();
+
+        for (const o of objects)
+            if (o instanceof Particle)
+                if (dist(o.position, player.position) < 16) {
+                    objects.delete(o);
+                    score += 1;
+                }
+
+        if (keys[" "] && counter <= 0) {
+            player.position = {
+                x: (player.position.x + 320) % 640,
+                y: 480 - player.position.y
+            }
+            player.angle = 2 * Math.PI - player.angle;
+            counter = 10;
+        }
+
+    } else {
+        ctx.fillStyle = "black";
+        ctx.font = "30px Arial";
+        ctx.fillText("score: " + score, 280, 240);
+    }
+
 
     for (const o of objects)
         o.draw();
 
-    if (keys[" "] && counter <= 0) {
-        player.position = {
-            x: (player.position.x + 320) % 640,
-            y: 480 - player.position.y
-        }
-        player.angle = 2 * Math.PI - player.angle;
-        counter = 10;
-    }
     counter--;
-    for (const o of objects)
-        if (o instanceof Particle)
-            if (dist(o.position, player.position) < 16)
-                objects.delete(o);
+
+    ctx.fillStyle = "black";
+    ctx.font = "12px Arial";
+    ctx.fillText("time: " + Math.max(0, time()), 640 - 300, 16);
+    ctx.fillText("score: " + score, 16, 16);
 
 }
 
