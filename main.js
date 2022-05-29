@@ -50,8 +50,8 @@ class Particle {
         ctx.fillStyle = "green";
         ctx.fillRect(this.position.x - PARTICLESIZE / 2, this.position.y - PARTICLESIZE / 2, PARTICLESIZE, PARTICLESIZE);
 
-        ctx.fillStyle = "#88FF88";
-        ctx.fillRect((this.position.x + 320) - PARTICLESIZE / 2, (480 - this.position.y) - PARTICLESIZE / 2, PARTICLESIZE, PARTICLESIZE);
+        /*ctx.fillStyle = "#88FF88";
+        ctx.fillRect((this.position.x + 320) - PARTICLESIZE / 2, (480 - this.position.y) - PARTICLESIZE / 2, PARTICLESIZE, PARTICLESIZE);*/
     }
 }
 
