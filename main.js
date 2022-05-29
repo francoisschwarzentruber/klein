@@ -34,8 +34,8 @@ class Particle {
         };
         const PARTICLESPEED = 8;
         this.speed = {
-            x: PARTICLESPEED * Math.random() - PARTICLESPEED/2,
-            y: PARTICLESPEED * Math.random() - PARTICLESPEED/2
+            x: PARTICLESPEED * Math.random() - PARTICLESPEED / 2,
+            y: PARTICLESPEED * Math.random() - PARTICLESPEED / 2
         };
     }
     live() {
@@ -124,9 +124,10 @@ function dist(a, b) {
     return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
 }
 
-
+let counter = 0;
 
 setInterval(() => objects.add(new Particle()), 5000);
+
 function animate() {
     requestAnimationFrame(animate);
     ctx.fillStyle = "#BBDDFF";
@@ -138,13 +139,15 @@ function animate() {
     for (const o of objects)
         o.draw();
 
-    if (keys[" "]) {
+    if (keys[" "] && counter <= 0) {
         player.position = {
             x: (player.position.x + 320) % 640,
             y: 480 - player.position.y
         }
         player.angle = 2 * Math.PI - player.angle;
+        counter = 10;
     }
+    counter--;
     for (const o of objects)
         if (o instanceof Particle)
             if (dist(o.position, player.position) < 16)
