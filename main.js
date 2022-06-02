@@ -31,8 +31,10 @@ class Particle {
     }
 
     draw(ctx) {
-        ctx.fillStyle = "green";
-        ctx.fillRect(this.position.x - PARTICLESIZE / 2, this.position.y - PARTICLESIZE / 2, PARTICLESIZE, PARTICLESIZE);
+        ctx.strokeStyle = "#0088bb";
+        ctx.lineWidth = 5;
+        ctx.roundRect(this.position.x - PARTICLESIZE / 2, this.position.y - PARTICLESIZE / 2, PARTICLESIZE, PARTICLESIZE, 3);
+        ctx.stroke();
 
         /*ctx.fillStyle = "#88FF88";
         ctx.fillRect((this.position.x + 320) - PARTICLESIZE / 2, (480 - this.position.y) - PARTICLESIZE / 2, PARTICLESIZE, PARTICLESIZE);*/
@@ -50,7 +52,7 @@ class Player {
         this.angle = 0;
     }
     live() {
-        const STEP = 0.1;
+        const STEP = 0.05;
         if (game.keys["ArrowLeft"])
             this.angle -= STEP;
         if (game.keys["ArrowRight"])
@@ -62,22 +64,31 @@ class Player {
                 x: this.position.x + SPEED * Math.cos(this.angle),
                 y: this.position.y + SPEED * Math.sin(this.angle)
             };
+
+        if (game.keys["ArrowDown"])
+            this.position = {
+                x: this.position.x - SPEED * Math.cos(this.angle),
+                y: this.position.y - SPEED * Math.sin(this.angle)
+            };
         rounding(this.position);
     }
 
     draw(ctx) {
         function drawMe(position, angle) {
             const A = 0.5;
-            const S = 32;
+            const S = 16;
             ctx.beginPath();
             ctx.moveTo(position.x - S * Math.cos(angle - A), position.y - S * Math.sin(angle - A));
             ctx.lineTo(position.x, position.y);
             ctx.lineTo(position.x - S * Math.cos(angle + A), position.y - S * Math.sin(angle + A));
             ctx.stroke();
         }
-        ctx.lineWidth = 5;
+        ctx.lineWidth = 2;
         ctx.strokeStyle = "black";
         drawMe(this.position, this.angle);
+        ctx.lineWidth = 5;
+        ctx.circle(this.position.x, this.position.y, 6);
+        ctx.stroke();
 
         ctx.lineWidth = 1;
         drawMe({
@@ -106,7 +117,7 @@ const time = () => initialTime - Math.floor((Date.now() - beginningTime) / 1000)
 setInterval(() => objects.add(new Particle()), 5000);
 
 game.setBackground((ctx) => {
-    const steps = 128;
+    const steps = 64;
     for (let i = 0; i < steps; i++)
         for (let j = 0; j < steps; j++) {
 
@@ -114,8 +125,8 @@ game.setBackground((ctx) => {
             const ay = Math.sin(2 * Math.PI * j / steps) * (1 - (i / steps)) + Math.sin(2 * Math.PI * (1 - j / steps)) * (i / steps);
 
             const A = 64;
-            const cx = 192 + Math.floor(A * ax);
-            const cy = 192 + Math.floor(A * ay);
+            const cx = 192 + Math.round(A * ax);
+            const cy = 192 + Math.round(A * ay);
 
             const color = `rgb(${cx},${cy},192)`;
             const cellx = 320 / steps;
@@ -123,8 +134,8 @@ game.setBackground((ctx) => {
             const x = i * cellx;
             const y = j * celly;
             ctx.fillStyle = color;
-            ctx.fillRect(x, y, cellx, celly);
-            ctx.fillRect(x + 320, 480 - y - celly, cellx, celly);
+            ctx.fillRect(x, y, cellx+1, celly+1);
+            ctx.fillRect(x + 320, 480 - y - celly, cellx+1, celly+1);
         }
 
 });
