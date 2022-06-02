@@ -75,12 +75,11 @@ class Player {
             ctx.lineTo(position.x - S * Math.cos(angle + A), position.y - S * Math.sin(angle + A));
             ctx.stroke();
         }
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 5;
         ctx.strokeStyle = "black";
         drawMe(this.position, this.angle);
 
         ctx.lineWidth = 1;
-        ctx.strokeStyle = "gray";
         drawMe({
             x: (this.position.x + 320) % 640,
             y: 480 - this.position.y
@@ -106,29 +105,29 @@ const initialTime = 100;
 const time = () => initialTime - Math.floor((Date.now() - beginningTime) / 1000);
 setInterval(() => objects.add(new Particle()), 5000);
 
-function drawBackground(ctx) {
-    ctx.fillStyle = "#BBDDFF";
-    ctx.fillRect(0, 0, 640, 480);
-    /*const steps = 32;
+game.setBackground((ctx) => {
+    const steps = 128;
     for (let i = 0; i < steps; i++)
         for (let j = 0; j < steps; j++) {
-            const ax = 2*Math.PI * i / steps;
-            const ay = 2*Math.PI * (j / steps * (1-(i/steps)) + (i/steps) * (1-j / steps));
+
+            const ax = Math.sin(2 * Math.PI * i / steps);
+            const ay = Math.sin(2 * Math.PI * j / steps) * (1 - (i / steps)) + Math.sin(2 * Math.PI * (1 - j / steps)) * (i / steps);
+
             const A = 64;
-            const cx = 192;//192 + Math.floor(A * Math.sin(ax));
-            const cy = 192 + Math.floor(A * Math.sin(ay));
-            
-            const color = `rgb(${cy},${cy},192)`;
+            const cx = 192 + Math.floor(A * ax);
+            const cy = 192 + Math.floor(A * ay);
+
+            const color = `rgb(${cx},${cy},192)`;
             const cellx = 320 / steps;
             const celly = 480 / steps;
             const x = i * cellx;
             const y = j * celly;
             ctx.fillStyle = color;
             ctx.fillRect(x, y, cellx, celly);
-            ctx.fillRect(x+320, 480 - y - celly, cellx, celly);
+            ctx.fillRect(x + 320, 480 - y - celly, cellx, celly);
         }
-*/
-}
+
+});
 
 function interactionBetweenObjects() {
     for (const o of objects)
@@ -162,8 +161,12 @@ function drawGameOver(ctx) {
     ctx.fillText("score: " + score, 280, 280);
 }
 
+
+
+
+
 game.draw = (ctx) => {
-    drawBackground(ctx);
+    ctx.clearRect(0, 0, 640, 480);
 
     if (time() >= 0) {
         for (const o of objects) o.live();
