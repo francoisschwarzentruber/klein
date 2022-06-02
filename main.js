@@ -1,8 +1,4 @@
-const ctx = canvas.getContext("2d");
-
-const keys = [];
-window.onkeydown = (evt) => keys[evt.key] = true;
-window.onkeyup = (evt) => keys[evt.key] = false;
+import game from "./engine.js";
 
 function rounding(position) {
     if (position.x < 0) position.x = 640;
@@ -34,7 +30,7 @@ class Particle {
         rounding(this.position);
     }
 
-    draw() {
+    draw(ctx) {
         ctx.fillStyle = "green";
         ctx.fillRect(this.position.x - PARTICLESIZE / 2, this.position.y - PARTICLESIZE / 2, PARTICLESIZE, PARTICLESIZE);
 
@@ -55,21 +51,21 @@ class Player {
     }
     live() {
         const STEP = 0.1;
-        if (keys["ArrowLeft"])
+        if (game.keys["ArrowLeft"])
             this.angle -= STEP;
-        if (keys["ArrowRight"])
+        if (game.keys["ArrowRight"])
             this.angle += STEP;
 
         const SPEED = 5;
-        if (keys["ArrowUp"])
+        if (game.keys["ArrowUp"])
             this.position = {
                 x: this.position.x + SPEED * Math.cos(this.angle),
                 y: this.position.y + SPEED * Math.sin(this.angle)
             };
-        rounding(this.position)
+        rounding(this.position);
     }
 
-    draw() {
+    draw(ctx) {
         function drawMe(position, angle) {
             const A = 0.5;
             const S = 32;
@@ -110,9 +106,28 @@ const initialTime = 100;
 const time = () => initialTime - Math.floor((Date.now() - beginningTime) / 1000);
 setInterval(() => objects.add(new Particle()), 5000);
 
-function drawBackground() {
+function drawBackground(ctx) {
     ctx.fillStyle = "#BBDDFF";
     ctx.fillRect(0, 0, 640, 480);
+    /*const steps = 32;
+    for (let i = 0; i < steps; i++)
+        for (let j = 0; j < steps; j++) {
+            const ax = 2*Math.PI * i / steps;
+            const ay = 2*Math.PI * (j / steps * (1-(i/steps)) + (i/steps) * (1-j / steps));
+            const A = 64;
+            const cx = 192;//192 + Math.floor(A * Math.sin(ax));
+            const cy = 192 + Math.floor(A * Math.sin(ay));
+            
+            const color = `rgb(${cy},${cy},192)`;
+            const cellx = 320 / steps;
+            const celly = 480 / steps;
+            const x = i * cellx;
+            const y = j * celly;
+            ctx.fillStyle = color;
+            ctx.fillRect(x, y, cellx, celly);
+            ctx.fillRect(x+320, 480 - y - celly, cellx, celly);
+        }
+*/
 }
 
 function interactionBetweenObjects() {
@@ -133,35 +148,32 @@ function crossSurface() {
     counter = 10;
 }
 
-function drawScoreAndTime() {
+function drawScoreAndTime(ctx) {
     ctx.fillStyle = "black";
     ctx.font = "12px Arial";
     ctx.fillText("time: " + Math.max(0, time()), 640 - 300, 16);
     ctx.fillText("score: " + score, 16, 16);
 }
 
-function drawGameOver() {
+function drawGameOver(ctx) {
     ctx.fillStyle = "black";
     ctx.font = "30px Arial";
     ctx.fillText("Game Over", 240, 240);
     ctx.fillText("score: " + score, 280, 280);
 }
 
-function animate() {
-    requestAnimationFrame(animate);
-    drawBackground();
+game.draw = (ctx) => {
+    drawBackground(ctx);
 
     if (time() >= 0) {
         for (const o of objects) o.live();
         interactionBetweenObjects();
-        if (keys[" "] && counter <= 0)
+        if (game.keys[" "] && counter <= 0)
             crossSurface();
         counter--;
     } else
-        drawGameOver();
+        drawGameOver(ctx);
 
-    for (const o of objects) o.draw();
-    drawScoreAndTime();
+    for (const o of objects) o.draw(ctx);
+    drawScoreAndTime(ctx);
 }
-
-animate();
