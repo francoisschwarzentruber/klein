@@ -8,26 +8,47 @@ function rounding(position) {
 }
 
 
-class Particle {
+
+class PhysicalObject {
     position;
     speed;
-    constructor() {
-        this.initialTime = Math.random() * 1000;
+
+    constructor(x, y, sx, sy) {
         this.position = {
-            x: Math.random() * 640,
-            y: Math.random() * 480
+            x: x,
+            y: y
         };
-        const PARTICLESPEED = 6;
         this.speed = {
-            x: PARTICLESPEED * Math.random() - PARTICLESPEED / 2,
-            y: PARTICLESPEED * Math.random() - PARTICLESPEED / 2
+            x: sx,
+            y: sy
         };
     }
+
     live() {
         this.position = {
             x: this.position.x + this.speed.x,
             y: this.position.y + this.speed.y
         };
+    }
+}
+
+class Particle extends PhysicalObject {
+    constructor() {
+        const PARTICLESPEED = 10;
+        super(Math.random() * 640, Math.random() * 480, -PARTICLESPEED * Math.random(), 0);
+        this.initialTime = Math.random() * 1000;
+        /*this.position = {
+            x: Math.random() * 640,
+            y: Math.random() * 480
+        };
+        
+        this.speed = {
+            x: -PARTICLESPEED * Math.random(), //- PARTICLESPEED / 2,
+            y: 0 //   PARTICLESPEED * Math.random() - PARTICLESPEED / 2
+        };*/
+    }
+    live() {
+        super.live();
         rounding(this.position);
     }
 
@@ -44,6 +65,32 @@ class Particle {
 }
 
 
+
+
+
+class Beam extends PhysicalObject {
+    constructor(x, y, angle) {
+        const SPEED = 10;
+        super(x, y, SPEED * Math.cos(angle), SPEED * Math.sin(angle));
+        this.t = 60;
+    }
+
+    live() {
+        super.live();
+        rounding(this.position);
+        this.t--;
+        if (this.t <= 0)
+            objects.delete(this);
+    }
+
+
+    draw(ctx) {
+        ctx.strokeStyle = "yellow";
+        ctx.lineWidth = 4;
+        ctx.circle(this.position.x, this.position.y, 2);
+        ctx.stroke();
+    }
+}
 class Player {
 
     constructor() {
@@ -66,6 +113,10 @@ class Player {
                 x: this.position.x + SPEED * Math.cos(this.angle),
                 y: this.position.y + SPEED * Math.sin(this.angle)
             };
+
+        if (game.keys['f']) {
+            objects.add(new Beam(this.position.x, this.position.y, this.angle));
+        }
 
         if (game.keys["ArrowDown"])
             this.position = {
@@ -97,10 +148,10 @@ class Player {
         ctx.lineWidth = 1;
         for (let x = -640; x < 800; x += 640)
             for (let y = -480; y < 600; y += 480)
-        drawMe({
-            x: (this.position.x + 320) % 640+x,
-            y: 480 - this.position.y+y
-        }, 2 * Math.PI - this.angle);
+                drawMe({
+                    x: (this.position.x + 320) % 640 + x,
+                    y: 480 - this.position.y + y
+                }, 2 * Math.PI - this.angle);
     }
 }
 
@@ -153,6 +204,15 @@ function interactionBetweenObjects() {
                 objects.delete(o);
                 score += 1;
             }
+    for (const p of objects)
+        for (const b of objects)
+            if (p instanceof Particle)
+                if (b instanceof Beam) {
+                    if (dist(p.position, b.position) < 16) {
+                        objects.delete(p);
+                        score += 1;
+                    }
+                }
 }
 
 function crossSurface() {
@@ -177,9 +237,6 @@ function drawGameOver(ctx) {
     ctx.fillText("Game Over", 240, 240);
     ctx.fillText("score: " + score, 280, 280);
 }
-
-
-
 
 
 game.draw = (ctx) => {
